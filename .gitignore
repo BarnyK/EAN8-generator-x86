@@ -1,1 +1,3 @@
-asdfas.bmp
+*.bmp
+*.o
+draw_ean8
