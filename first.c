@@ -21,8 +21,8 @@ typedef struct {
     __int32_t horizontal_resolution;
     __uint32_t colors;
     __uint32_t imporant_colors;
-    __uint64_t color1;
-    __uint64_t color2;
+    __uint32_t color1;
+    __uint32_t color2;
 }bmpData;         // leaves the BM part out for size alignment
 
 
@@ -45,8 +45,9 @@ void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t w
     head.horizontal_resolution = 2835;   
     head.colors = 2;
     head.imporant_colors = 0;
-    head.color1 = 0x00000000;
-    head.color2 = 0x00FFFFFF;
+    head.color1 = 0x00FFFFFF;
+    head.color2 = 0x00000000;
+    printf("Size of head: %d", sizeof(head));
     fwrite(&type, sizeof(__uint16_t), 1, fptr);
     fwrite(&head, sizeof(head), 1, fptr);
 }
@@ -110,11 +111,67 @@ int main(int argc, char *argv[]){
     draw_ean8(pictureData, stride, height, width, digits, buffer);
 
     // Debug code checking
-    for(int i=0;i<67;i++){
+    int b=0, e=3;
+    for(int i=b;i<e;i++){
         printf("%d",buffer[i]);
     }
     putchar('\n');
 
+    b=e;e=e+7;
+    for(int i=b;i<e;i++){
+        printf("%d",buffer[i]);
+    }
+    putchar('\n');
+
+    b=e;e+=7;
+    for(int i=b;i<e;i++){
+        printf("%d",buffer[i]);
+    }
+    putchar('\n');
+
+    b=e;e+=7;
+    for(int i=b;i<e;i++){
+        printf("%d",buffer[i]);
+    }
+    putchar('\n');
+
+    b=e;e+=7;;
+    for(int i=b;i<e;i++){
+        printf("%d",buffer[i]);
+    }
+    putchar('\n');
+    b=e;e+=5;;
+    for(int i=b;i<e;i++){
+        printf("%d",buffer[i]);
+    }
+    putchar('\n');
+    b=36;e=b+7;
+    for(int i=b;i<e;i++){
+        printf("%d",buffer[i]); 
+    }
+    putchar('\n');
+    b=e;e+=7;
+    for(int i=b;i<e;i++){
+        printf("%d",buffer[i]);
+    }
+    putchar('\n');
+    b=e;e+=7;
+    for(int i=b;i<e;i++){
+        printf("%d",buffer[i]);
+    }
+    putchar('\n');
+    b=e;e+=7;
+    for(int i=b;i<e;i++){
+        printf("%d",buffer[i]);
+    }
+    putchar('\n');
+    b=e;e+=3;
+    for(int i=b;i<e;i++){
+        printf("%d",buffer[i]);
+    }
+    putchar('\n');
+
+    
     FILE *fptr;
     fptr = fopen(filename,"wb");
     writeHeader(fptr, file_size, height, width);
