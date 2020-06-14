@@ -21,13 +21,14 @@ typedef struct {
     __int32_t horizontal_resolution;
     __uint32_t colors;
     __uint32_t imporant_colors;
-}bmpHeaderData;         // leaves the BM part out for size alignment
+    __uint64_t color1;
+    __uint64_t color2;
+}bmpData;         // leaves the BM part out for size alignment
 
 
-
-
+// Writes header data and 2 color pallette
 void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t width){
-    bmpHeaderData head;
+    bmpData head;
     __uint16_t type = 0x4d42;
     head.file_size = file_size;
     head.reserved1 = 0;
@@ -44,6 +45,8 @@ void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t w
     head.horizontal_resolution = 2835;   
     head.colors = 2;
     head.imporant_colors = 0;
+    head.color1 = 0x00000000;
+    head.color2 = 0x00FFFFFF;
     fwrite(&type, sizeof(__uint16_t), 1, fptr);
     fwrite(&head, sizeof(head), 1, fptr);
 }
@@ -105,21 +108,22 @@ int main(int argc, char *argv[]){
     char* buffer = calloc(67, sizeof(char));
 
     draw_ean8(pictureData, stride, height, width, digits, buffer);
+
+    // Debug code checking
     for(int i=0;i<67;i++){
         printf("%d",buffer[i]);
     }
     putchar('\n');
-    // FILE *fptr;
-    // fptr = fopen(filename,"wb");
-    // writeHeader(fptr, file_size, height, width);
-    // for(__uint32_t c = 0; c <= 0x00FFFFFF; c+= 0x00FFFFFF){     // Color palette, 8 bit greyscale
-    //     fwrite(&c, sizeof(__uint32_t), 1, fptr);
-    // }
-    // fwrite(pictureData,sizeof(char), stride*height, fptr);
+
+    FILE *fptr;
+    fptr = fopen(filename,"wb");
+    writeHeader(fptr, file_size, height, width);
+    fwrite(pictureData,sizeof(char), stride*height, fptr);
 
     
-    // fclose(fptr);
-    // free(pictureData);
+    fclose(fptr);
+    free(pictureData);
+    free(buffer);
     return 0;
 }
 
