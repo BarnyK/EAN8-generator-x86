@@ -4,6 +4,7 @@
 
 //void draw_ean8(void *img, unsigned int stride, unsigned int height,unsigned int modwidth, char *digits);
 extern void draw_ean8(char *img, unsigned int stride, unsigned int height, unsigned int width, char *digits, char *buffer);
+
 // BMP header data, calculated in C
 typedef struct {
     __uint32_t file_size;
@@ -47,7 +48,6 @@ void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t w
     head.imporant_colors = 0;
     head.color1 = 0x00FFFFFF;
     head.color2 = 0x00000000;
-    printf("Size of head: %d", sizeof(head));
     fwrite(&type, sizeof(__uint16_t), 1, fptr);
     fwrite(&head, sizeof(head), 1, fptr);
 }
@@ -107,9 +107,8 @@ int main(int argc, char *argv[]){
 
     char* pictureData = calloc(stride * height, sizeof(char));
     char* buffer = calloc(67, sizeof(char));
-
     draw_ean8(pictureData, stride, height, width, digits, buffer);
-
+    
     // Debug code checking
     int b=0, e=3;
     for(int i=b;i<e;i++){
@@ -121,56 +120,58 @@ int main(int argc, char *argv[]){
     for(int i=b;i<e;i++){
         printf("%d",buffer[i]);
     }
-    putchar('\n');
+    printf("\t%c\n",digits[0]);
 
     b=e;e+=7;
     for(int i=b;i<e;i++){
         printf("%d",buffer[i]);
     }
-    putchar('\n');
+    printf("\t%c\n",digits[1]);
 
     b=e;e+=7;
     for(int i=b;i<e;i++){
         printf("%d",buffer[i]);
     }
-    putchar('\n');
+    printf("\t%c\n",digits[2]);
 
     b=e;e+=7;;
     for(int i=b;i<e;i++){
         printf("%d",buffer[i]);
     }
-    putchar('\n');
+    printf("\t%c\n",digits[3]);
+
     b=e;e+=5;;
     for(int i=b;i<e;i++){
         printf("%d",buffer[i]);
     }
     putchar('\n');
+
     b=36;e=b+7;
     for(int i=b;i<e;i++){
         printf("%d",buffer[i]); 
     }
-    putchar('\n');
+    printf("\t%c\n",digits[4]);
     b=e;e+=7;
     for(int i=b;i<e;i++){
         printf("%d",buffer[i]);
     }
-    putchar('\n');
+    printf("\t%c\n",digits[5]);
     b=e;e+=7;
     for(int i=b;i<e;i++){
         printf("%d",buffer[i]);
     }
-    putchar('\n');
+    printf("\t%c\n",digits[6]);
     b=e;e+=7;
     for(int i=b;i<e;i++){
         printf("%d",buffer[i]);
     }
-    putchar('\n');
+    printf("\t%c\n",digits[7]);
     b=e;e+=3;
     for(int i=b;i<e;i++){
         printf("%d",buffer[i]);
     }
     putchar('\n');
-
+    
     
     FILE *fptr;
     fptr = fopen(filename,"wb");
