@@ -1,103 +1,94 @@
 section     .data
     codes:  db 0xD, 0x19, 0x13, 0x3D, 0x23, 0x31, 0x2F, 0x3B, 0x37, 0xB
     a:      dq 67.0
-    savef:  dq 0
+
 section     .text
 global      draw_ean8
 
 draw_ean8:
-    push    ebp
-    mov     ebp, esp
-
-    push    ebx
-    push    esi
-    push    edi
+    push    RBP
+    push    R9                           ; save beginning of buffer
+    mov     [R9], DWORD 0x010001           ;First brace
+    mov     [R9+63], DWORD 0x01000100      ;End brace
+    mov     [R9+31], DWORD 0x01000100      ;Second brace 1
+    mov     [R9+35], BYTE 0x00             ;Second brace 2
+    add     R9, 2              ; allign for first digit
     
-    mov     eax, [ebp+28]       ;buffer
-    mov     edi, [ebp+24]       ;digits
-
-    mov     [eax], DWORD 0x010001           ;First brace
-    mov     [eax+63], DWORD 0x01000100      ;End brace
-    mov     [eax+31], DWORD 0x01000100      ;Second brace 1
-    mov     [eax+35], BYTE 0x00             ;Second brace 2
-    add     eax, 2              ; allign for first digit
-
-    xor     edx, edx            ; zero edx for digit counter
-    xor     ebx, ebx            ; zero ebx for code reading
+    xor     R10, R10            ; zero edx for digit counter
+    xor     RBX, RBX            ; zero ebx for code reading
 read_dig:
-    mov     bl, [edi + edx]     ; read digit
-    sub     bl, '0'             ; digit to int
-    mov     bl, [codes + ebx]   ; digit to code
+    mov     BL, [R8 + R10]          ; read digit
+    sub     BL, '0'                 ; digit to int
+    mov     BL, [codes + RBX]       ; digit to code
 
-    mov     ecx, 7              ; init counter
-    cmp     edx, 4              ; for digits after 3 negate codes
+    mov     RAX, 7              ; init counter
+    cmp     R10, 4              ; for digits after 3 negate codes
     jl      loop1
-    not     bl
+    not     BL
 loop1:
-    inc     eax                 
-    dec     ecx                 
-    bt      ebx, ecx
+    inc     R9                
+    dec     EAX                 
+    bt      EBX, EAX
     jnc     loop1end            ; if 0 skip
-    mov     [eax], BYTE 0x01    ; set 1
+    mov     [R9], BYTE 0x01    ; set 1
 loop1end:
     jnz     loop1               
-    inc     edx
-    cmp     edx, 4
+    inc     R10
+    cmp     R10D, 4
     jne     cont
-    add     eax, 5              ; skip the bar
+    add     R9, 5              ; skip the bar
 cont:
-    cmp     edx, 8
+    cmp     R10, 8
     jne     read_dig
+    pop     R9
 
-    ; +12 strride, +16 height, +20 width, 
-    
-    
     fldz
-    fld     qword [a]           ; st0 = 66
-    fild    dword [ebp+20]      ; st0 = width, st1 = 66
-    ;fld1                        ; st0 = 1, st1 = width, st2 = 66
-    ;fsubp                       ; st0 = width - 1, st1 = 66
-    fdivp   st1, st0            ; st0 = 66/(width - 1) = step size
+    fld     qword [a]           ; st0 = 67
+    mov     [a], RCX
+    fld     qword [a]           ; st0 = width, st1 = 67
+    fdivp   st1, st0            ; st0 = 67/(width) = step size
     fldz                        ; st0 = 0, st1 = step
 
-    ; EAX at the end of buffer right now
-    mov     eax, [ebp+28]       ; set eax to point to beginning of buffer
-    mov     edi, [ebp+8]        ; picture data
-    xor     ecx, ecx            ; 0 for width counter
-    xor     ebx, ebx            ; 0 for height counter
-    xor     esi, esi            ; 0 for buffer offset
-columnloop:
-    cmp     BYTE [eax + esi], 0
-    jz     afterset
-    push    edi    
-    mov     ebx, [ebp+16]
-rowloop:
-    mov     [edi + ecx], BYTE 0x01
-    add     edi, [ebp+12]
-    dec     ebx
-    jnz     rowloop
-    pop     edi
-afterset:
+        ; eax -> R9
+        ; EDI -> RDI
+        ; [EBP + 12] -> RSI
+        ; [EBP + 20] -> RCX
+        ; [EBP + 16] -> RDX
+        ; ECX -> R10
+        ; EBX -> R11
+        ; ESI -> RAX
 
-    fadd    st0, st1            ; add step
-    fst     st2
-    fisttp  dword[a]            ; round to integer -> memory
-    fld     st1                 
-    mov     esi, [a]            ; memory -> register
+;     xor     R10, R10            ; 0 for width counter
+;     xor     R11, R11            ; 0 for height counter
+;     xor     RAX, RAX            ; 0 for buffer offset
+; columnloop:
+;     cmp     BYTE [R9 + RAX], 0
+;     jz      afterset
+;     push    RDI    
+;     mov     R11, RDX
+; rowloop:
+;     mov     [RDI + R10], BYTE 0x01
+;     add     RDI, RSI
+;     dec     R11
+;     jnz     rowloop
+;     pop     RDI
+; afterset:
 
-    inc     ecx
-    cmp     ecx, [ebp+20]       ; ecx == height 
-    jne     columnloop
+;     fadd    st0, st1            ; add step
+;     fst     st2
+;     fisttp  dword[a]            ; round to integer -> memory
+;     fld     st1                 
+;     mov     RAX, [a]            ; memory -> register
 
-end:
-    ; Free used floating point stack
-    ffree   st0
-    ffree   st0
-    ffree   st0
-    ; return registers and frame back
-    pop     edi
-    pop     esi
-    pop     ebx
-    mov     esp, ebp
-    pop     ebp
+;     inc     R10
+;     cmp     R10, RCX       ; ecx == height 
+;     jne     columnloop
+
+; end:
+;     ; Free used floating point stack
+     ffree   st0
+     ffree   st0
+     ffree   st0
+ 
+    pop     rbp
     ret 
