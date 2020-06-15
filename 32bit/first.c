@@ -55,9 +55,9 @@ void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t w
 // Image data stored in unsigner char
 
 int main(int argc, char *argv[]){
-    int width, height, checksum=0, codecheck = 1, stride, file_size;
+    int width, height, checksum=0, codecheck = 1, digits_len, stride, file_size;
     char digits[9] = {0}, filename[64] = {0}, tmp;
-    if(argc != 5){
+    if(argc != 5 && argc != 4){
         printf("Not enough arguments\n");
         return 1;
     }
@@ -78,9 +78,9 @@ int main(int argc, char *argv[]){
     
     // Read, validate and check ean8 code
     strncpy(digits, argv[3],9);
-    if(strlen(digits) == 8){
-        for(int i = 0; i < 8; i++){
-            digits[i] = argv[3][i];
+    digits_len = strlen(digits);
+    if(digits_len == 8 || digits_len == 7){
+        for(int i = 0; i < digits_len; i++){
             if((digits[i] >= '0') && (digits[i] <= '9')){
                 checksum += (digits[i] - '0') * ((i%2) + (((i+1) % 2) * 3));
             }
@@ -88,7 +88,10 @@ int main(int argc, char *argv[]){
                 codecheck = 0;
             }
         }
-        if(checksum % 10 != 0){
+        if(codecheck && digits_len == 7){
+            digits[7] = '0' + 10 - (checksum % 10);
+        }
+        else if(checksum % 10 != 0){
             codecheck = 0;
         }
     }
@@ -99,8 +102,12 @@ int main(int argc, char *argv[]){
         printf("Invalid code");
         return 4;
     }
-
-    strncpy(filename, argv[4],32);  // Don't need to validate, let user save it to any filename they want
+    if(argc == 5){
+        strncpy(filename, argv[4],32);  // Don't need to validate, let user save it to any filename they want
+    }
+    else if(argc == 4){
+        sprintf(filename, "%s.bmp", digits);
+    }
     
     stride = (((8 * width) + 31)/32) * 4;
     file_size = stride * height + 54 + 4 * 2;
@@ -182,6 +189,8 @@ int main(int argc, char *argv[]){
     fclose(fptr);
     free(pictureData);
     free(buffer);
+
+    printf("Barcode %s saved to %s\n", digits, filename);
     return 0;
 }
 
