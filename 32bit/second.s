@@ -1,7 +1,7 @@
 section     .data
     codes:  db 0xD, 0x19, 0x13, 0x3D, 0x23, 0x31, 0x2F, 0x3B, 0x37, 0xB
     a:      dq 67.0
-    savef:  dq 0
+
 section     .text
 global      draw_ean8
 
@@ -53,14 +53,12 @@ cont:
     
     
     fldz
-    fld     qword [a]           ; st0 = 66
-    fild    dword [ebp+20]      ; st0 = width, st1 = 66
-    ;fld1                        ; st0 = 1, st1 = width, st2 = 66
-    ;fsubp                       ; st0 = width - 1, st1 = 66
-    fdivp   st1, st0            ; st0 = 66/(width - 1) = step size
-    fldz                        ; st0 = 0, st1 = step
+    fld     qword [a]           ; st0 = 67, st1 = 0
+    fild    dword [ebp+20]      ; st0 = width, st1 = 67, st2 =0
+    fdivp   st1, st0            ; st0 = 67/width = step size, st1 = 0
+    fldz                        ; st0 = 0, st1 = step, st2 = 0
 
-    ; EAX at the end of buffer right now
+
     mov     eax, [ebp+28]       ; set eax to point to beginning of buffer
     mov     edi, [ebp+8]        ; picture data
     xor     ecx, ecx            ; 0 for width counter

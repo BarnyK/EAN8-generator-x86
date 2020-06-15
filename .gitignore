@@ -1,4 +1,5 @@
 *.bmp
 *.o
 draw_ean8
+draw_ean8_64
 test1.c

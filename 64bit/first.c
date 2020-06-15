@@ -45,7 +45,7 @@ void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t w
 // Image data stored in unsigner char
 
 int main(int argc, char *argv[]){
-    int width, height, checksum=0, codecheck = 1, digits_len, stride, file_size;
+    unsigned int width, height, checksum=0, codecheck = 1, digits_len, stride, file_size;
     char digits[9] = {0}, filename[64] = {0}, tmp;
     char *pictureData, *buffer;
     
@@ -113,11 +113,15 @@ int main(int argc, char *argv[]){
         printf("Memory allocation error\n");
         return 5;
     }
-
-
-    draw_ean8(pictureData, stride, height, width, digits, buffer);
     
 
+    height = 100;
+    width = 67;
+    draw_ean8(pictureData, stride, height, width, digits, buffer);
+    for(int i=0;i<67;i++){
+        printf("%d ",buffer[i]);
+    }
+    putchar('\n');
     FILE *fptr;
     fptr = fopen(filename,"wb");
     writeHeader(fptr, file_size, height, width);
