@@ -1,5 +1,5 @@
 section     .data
-    codes:  db 0x58, 0x19, 0x13, 0x3D, 0x23, 0x31, 0x2F, 0x3B, 0x37, 0xB
+    codes:  db 0xD, 0x19, 0x13, 0x3D, 0x23, 0x31, 0x2F, 0x3B, 0x37, 0xB
     a:      dq 67.0
     savef:  dq 0
 section     .text
@@ -23,22 +23,21 @@ draw_ean8:
     add     eax, 2              ; allign for first digit
 
     xor     edx, edx            ; zero edx for digit counter
+    xor     ebx, ebx            ; zero ebx for code reading
 read_dig:
-    xor     ebx, ebx
     mov     bl, [edi + edx]     ; read digit
     sub     bl, '0'             ; digit to int
+    mov     bl, [codes + ebx]   ; digit to code
 
-    mov     bl, [codes + ebx]   ; decode it
-
-    mov     ecx, 7
-    cmp     edx, 4
+    mov     ecx, 7              ; init counter
+    cmp     edx, 4              ; for digits after 3 negate codes
     jl      loop1
     not     bl
 loop1:
-    inc     eax             
-    dec     ecx
+    inc     eax                 
+    dec     ecx                 
     bt      ebx, ecx
-    jnc     loop1end            ; if 0 skip, maybe change to setting 0?
+    jnc     loop1end            ; if 0 skip
     mov     [eax], BYTE 0x01    ; set 1
 loop1end:
     jnz     loop1               

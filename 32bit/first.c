@@ -5,51 +5,41 @@
 //void draw_ean8(void *img, unsigned int stride, unsigned int height,unsigned int modwidth, char *digits);
 extern void draw_ean8(char *img, unsigned int stride, unsigned int height, unsigned int width, char *digits, char *buffer);
 
-// BMP header data, calculated in C
-typedef struct {
-    __uint32_t file_size;
-    __uint16_t reserved1;
-    __uint16_t reserved2;
-    __uint32_t  start;
-    __uint32_t header_size;
-    __int32_t width;
-    __int32_t height;
-    __uint16_t planes;
-    __uint16_t bits_per_pixel;
-    __uint32_t compression;;
-    __uint32_t image_size;
-    __int32_t vertical_resolution;
-    __int32_t horizontal_resolution;
-    __uint32_t colors;
-    __uint32_t imporant_colors;
-    __uint32_t color1;
-    __uint32_t color2;
-}bmpData;         // leaves the BM part out for size alignment
-
-
 // Writes header data and 2 color pallette
 void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t width){
-    bmpData head;
-    __uint16_t type = 0x4d42;
-    head.file_size = file_size;
-    head.reserved1 = 0;
-    head.reserved2 = 0;
-    head.start = 0x3e;
-    head.header_size = 40;
-    head.width = width;
-    head.height = height;
-    head.planes = 1;
-    head.bits_per_pixel = 8;
-    head.compression = 0;
-    head.image_size = 0;
-    head.vertical_resolution = 2835;     // 72 DPI
-    head.horizontal_resolution = 2835;   
-    head.colors = 2;
-    head.imporant_colors = 0;
-    head.color1 = 0x00FFFFFF;
-    head.color2 = 0x00000000;
+    unsigned short type = 0x4d42;
+    unsigned short reserved1 = 0;
+    unsigned short reserved2 = 0;
+    unsigned int start = 0x3e;
+    unsigned int header_size = 40;
+    unsigned short planes = 1;
+    unsigned short bits_per_pixel = 8;
+    unsigned int compression = 0;
+    unsigned int image_size = 0;
+    int vertical_resolution = 2835;     // 72 DPI
+    int horizontal_resolution = 2835;   
+    unsigned int colors = 2;
+    unsigned int imporant_colors = 0;
+    unsigned int color1 = 0x00FFFFFF;
+    unsigned int color2 = 0x00000000;
     fwrite(&type, sizeof(__uint16_t), 1, fptr);
-    fwrite(&head, sizeof(head), 1, fptr);
+    fwrite(&file_size, sizeof(__uint32_t), 1, fptr);
+    fwrite(&reserved1, sizeof(__uint16_t), 1, fptr);
+    fwrite(&reserved2, sizeof(__uint16_t), 1, fptr);
+    fwrite(&start, sizeof(__uint32_t), 1, fptr);
+    fwrite(&header_size, sizeof(__uint32_t), 1, fptr);
+    fwrite(&width, sizeof(__int32_t), 1, fptr);
+    fwrite(&height, sizeof(__int32_t), 1, fptr);
+    fwrite(&planes, sizeof(__uint16_t), 1, fptr);
+    fwrite(&bits_per_pixel, sizeof(__uint16_t), 1, fptr);
+    fwrite(&compression, sizeof(__uint32_t), 1, fptr);
+    fwrite(&image_size, sizeof(__uint32_t), 1, fptr);
+    fwrite(&vertical_resolution, sizeof(__int32_t), 1, fptr);
+    fwrite(&horizontal_resolution, sizeof(__int32_t), 1, fptr);
+    fwrite(&colors, sizeof(__uint32_t), 1, fptr);
+    fwrite(&imporant_colors, sizeof(__uint32_t), 1, fptr);
+    fwrite(&color1, sizeof(__uint32_t), 1, fptr);
+    fwrite(&color2, sizeof(__uint32_t), 1, fptr);
 }
 
 // Image data stored in unsigner char
@@ -57,6 +47,8 @@ void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t w
 int main(int argc, char *argv[]){
     int width, height, checksum=0, codecheck = 1, digits_len, stride, file_size;
     char digits[9] = {0}, filename[64] = {0}, tmp;
+    char *pictureData, *buffer;
+    
     if(argc != 5 && argc != 4){
         printf("Not enough arguments\n");
         return 1;
@@ -102,6 +94,8 @@ int main(int argc, char *argv[]){
         printf("Invalid code");
         return 4;
     }
+
+    // Name argument
     if(argc == 5){
         strncpy(filename, argv[4],32);  // Don't need to validate, let user save it to any filename they want
     }
@@ -112,79 +106,22 @@ int main(int argc, char *argv[]){
     stride = (((8 * width) + 31)/32) * 4;
     file_size = stride * height + 54 + 4 * 2;
 
-    char* pictureData = calloc(stride * height, sizeof(char));
-    char* buffer = calloc(67, sizeof(char));
+    pictureData = calloc(stride * height, sizeof(char));
+    buffer = calloc(67, sizeof(char));
+
+    if(pictureData == NULL || buffer == NULL){
+        printf("Memory allocation error\n");
+        return 5;
+    }
+
+
     draw_ean8(pictureData, stride, height, width, digits, buffer);
     
-    // Debug code checking
-    int b=0, e=3;
-    for(int i=b;i<e;i++){
-        printf("%d",buffer[i]);
-    }
-    putchar('\n');
 
-    b=e;e=e+7;
-    for(int i=b;i<e;i++){
-        printf("%d",buffer[i]);
-    }
-    printf("\t%c\n",digits[0]);
-
-    b=e;e+=7;
-    for(int i=b;i<e;i++){
-        printf("%d",buffer[i]);
-    }
-    printf("\t%c\n",digits[1]);
-
-    b=e;e+=7;
-    for(int i=b;i<e;i++){
-        printf("%d",buffer[i]);
-    }
-    printf("\t%c\n",digits[2]);
-
-    b=e;e+=7;;
-    for(int i=b;i<e;i++){
-        printf("%d",buffer[i]);
-    }
-    printf("\t%c\n",digits[3]);
-
-    b=e;e+=5;;
-    for(int i=b;i<e;i++){
-        printf("%d",buffer[i]);
-    }
-    putchar('\n');
-
-    b=36;e=b+7;
-    for(int i=b;i<e;i++){
-        printf("%d",buffer[i]); 
-    }
-    printf("\t%c\n",digits[4]);
-    b=e;e+=7;
-    for(int i=b;i<e;i++){
-        printf("%d",buffer[i]);
-    }
-    printf("\t%c\n",digits[5]);
-    b=e;e+=7;
-    for(int i=b;i<e;i++){
-        printf("%d",buffer[i]);
-    }
-    printf("\t%c\n",digits[6]);
-    b=e;e+=7;
-    for(int i=b;i<e;i++){
-        printf("%d",buffer[i]);
-    }
-    printf("\t%c\n",digits[7]);
-    b=e;e+=3;
-    for(int i=b;i<e;i++){
-        printf("%d",buffer[i]);
-    }
-    putchar('\n');
-    
-    
     FILE *fptr;
     fptr = fopen(filename,"wb");
     writeHeader(fptr, file_size, height, width);
     fwrite(pictureData,sizeof(char), stride*height, fptr);
-
     
     fclose(fptr);
     free(pictureData);
