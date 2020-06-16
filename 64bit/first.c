@@ -6,7 +6,7 @@
 extern void draw_ean8(char *img, unsigned int stride, unsigned int height, unsigned int width, char *digits, char *buffer);
 
 // Writes header data and 2 color pallette
-void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t width){
+void writeHeader(FILE *fptr, unsigned int file_size, unsigned int height, unsigned int width){
     unsigned short type = 0x4d42;
     unsigned short reserved1 = 0;
     unsigned short reserved2 = 0;
@@ -46,7 +46,7 @@ void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t w
 
 int main(int argc, char *argv[]){
     unsigned int width, height, checksum=0, codecheck = 1, digits_len, stride, file_size;
-    char digits[9] = {0}, filename[64] = {0}, tmp;
+    char digits[9] = {0}, filename[256] = {0}, tmp;
     char *pictureData, *buffer;
     
     if(argc < 4){
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]){
             }
         }
         if(codecheck && digits_len == 7){
-            digits[7] = '0' + 10 - (checksum % 10);
+            digits[7] = '0' + (10 - (checksum % 10))%10;
         }
         else if(checksum % 10 != 0){
             codecheck = 0;
@@ -118,13 +118,14 @@ int main(int argc, char *argv[]){
     
 
     draw_ean8(pictureData, stride, height, width, digits, buffer);
-    
+
+
     FILE *fptr;
     fptr = fopen(filename,"wb");
     writeHeader(fptr, file_size, height, width);
     fwrite(pictureData,sizeof(char), stride*height, fptr);
     fclose(fptr);
-    
+
     free(pictureData);
     free(buffer);
 

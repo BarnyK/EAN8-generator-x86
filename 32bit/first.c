@@ -45,11 +45,11 @@ void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t w
 // Image data stored in unsigner char
 
 int main(int argc, char *argv[]){
-    int width, height, checksum=0, codecheck = 1, digits_len, stride, file_size;
-    char digits[9] = {0}, filename[64] = {0}, tmp;
+    unsigned int width, height, checksum=0, codecheck = 1, digits_len, stride, file_size;
+    char digits[9] = {0}, filename[256] = {0}, tmp;
     char *pictureData, *buffer;
     
-    if(argc != 5 && argc != 4){
+    if(argc < 4){
         printf("Not enough arguments\n");
         return 1;
     }
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]){
             }
         }
         if(codecheck && digits_len == 7){
-            digits[7] = '0' + 10 - (checksum % 10);
+            digits[7] = '0' + (10 - (checksum % 10))%10;
         }
         else if(checksum % 10 != 0){
             codecheck = 0;
@@ -103,9 +103,11 @@ int main(int argc, char *argv[]){
         sprintf(filename, "%s.bmp", digits);
     }
     
+    // Calculate stride and file size for the header
     stride = (((8 * width) + 31)/32) * 4;
-    file_size = stride * height + 54 + 4 * 2;
+    file_size = stride * height + 62;
 
+    // Allocate memory for buffer and picture data
     pictureData = calloc(stride * height, sizeof(char));
     buffer = calloc(67, sizeof(char));
 
@@ -113,17 +115,16 @@ int main(int argc, char *argv[]){
         printf("Memory allocation error\n");
         return 5;
     }
-
+    
 
     draw_ean8(pictureData, stride, height, width, digits, buffer);
     
-
     FILE *fptr;
     fptr = fopen(filename,"wb");
     writeHeader(fptr, file_size, height, width);
     fwrite(pictureData,sizeof(char), stride*height, fptr);
-    
     fclose(fptr);
+
     free(pictureData);
     free(buffer);
 

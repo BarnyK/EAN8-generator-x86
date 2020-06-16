@@ -1,6 +1,6 @@
 section     .data
-    codes:  db 0xD, 0x19, 0x13, 0x3D, 0x23, 0x31, 0x2F, 0x3B, 0x37, 0xB
-    a:      dd 67.00
+codes:  db  0xD, 0x19, 0x13, 0x3D, 0x23, 0x31, 0x2F, 0x3B, 0x37, 0xB
+a:      dd  67.00
 
 section     .text
 global      draw_ean8
@@ -17,18 +17,18 @@ draw_ean8:
     xor     R10, R10            ; zero edx for digit counter
     xor     R11, R11            ; zero ebx for code reading
 read_dig:
-    mov     BL, [R8 + R10]          ; read digit
-    sub     BL, '0'                 ; digit to int
-    mov     BL, [codes + R11]       ; digit to code
+    mov     R11B, [R8 + R10]          ; read digit
+    sub     R11B, '0'                 ; digit to int
+    mov     R11B, [codes + R11]       ; digit to code
 
     mov     EAX, 7              ; init counter
     cmp     R10, 4              ; for digits after 3 negate codes
     jl      loop1
-    not     BL
+    not     R11B
 loop1:
     inc     R9                  ; inc buffer
     dec     EAX                 
-    bt      EBX, EAX
+    bt      R11, RAX
     jnc     loop1end            ; if 0 skip
     mov     [R9], BYTE 0x01    
 loop1end:
@@ -42,13 +42,13 @@ cont:
     cmp     R10, 8
     jne     read_dig
 
-    sub     R9, 66              ; go back to beginning of buffer
+    sub     r9, 63              ; go back to beginning of buffer
 
     ; Setting up scaling
     CVTSI2SS    xmm1, RCX       ; xmm1 = width
     movss   xmm0, [a]           ; xmm0 = 67
-    divss   xmm0, xmm1          ; xmm0 = 67/width - step
-    subss   xmm2, xmm2
+    divss   xmm0, xmm1          ; xmm0 = 67/width = step
+    subss   xmm2, xmm2          
 
     ; Preparation for loops
     xor     R10, R10            ; 0 for width counter
