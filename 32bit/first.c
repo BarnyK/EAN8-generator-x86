@@ -22,30 +22,30 @@ void writeHeader(FILE *fptr, __uint32_t file_size, __int32_t height, __int32_t w
     unsigned int imporant_colors = 0;
     unsigned int color1 = 0x00FFFFFF;
     unsigned int color2 = 0x00000000;
-    fwrite(&type, sizeof(__uint16_t), 1, fptr);
-    fwrite(&file_size, sizeof(__uint32_t), 1, fptr);
-    fwrite(&reserved1, sizeof(__uint16_t), 1, fptr);
-    fwrite(&reserved2, sizeof(__uint16_t), 1, fptr);
-    fwrite(&start, sizeof(__uint32_t), 1, fptr);
-    fwrite(&header_size, sizeof(__uint32_t), 1, fptr);
-    fwrite(&width, sizeof(__int32_t), 1, fptr);
-    fwrite(&height, sizeof(__int32_t), 1, fptr);
-    fwrite(&planes, sizeof(__uint16_t), 1, fptr);
-    fwrite(&bits_per_pixel, sizeof(__uint16_t), 1, fptr);
-    fwrite(&compression, sizeof(__uint32_t), 1, fptr);
-    fwrite(&image_size, sizeof(__uint32_t), 1, fptr);
-    fwrite(&vertical_resolution, sizeof(__int32_t), 1, fptr);
-    fwrite(&horizontal_resolution, sizeof(__int32_t), 1, fptr);
-    fwrite(&colors, sizeof(__uint32_t), 1, fptr);
-    fwrite(&imporant_colors, sizeof(__uint32_t), 1, fptr);
-    fwrite(&color1, sizeof(__uint32_t), 1, fptr);
-    fwrite(&color2, sizeof(__uint32_t), 1, fptr);
+    fwrite(&type, sizeof(uint16_t), 1, fptr);
+    fwrite(&file_size, sizeof(uint32_t), 1, fptr);
+    fwrite(&reserved1, sizeof(uint16_t), 1, fptr);
+    fwrite(&reserved2, sizeof(uint16_t), 1, fptr);
+    fwrite(&start, sizeof(uint32_t), 1, fptr);
+    fwrite(&header_size, sizeof(uint32_t), 1, fptr);
+    fwrite(&width, sizeof(int32_t), 1, fptr);
+    fwrite(&height, sizeof(int32_t), 1, fptr);
+    fwrite(&planes, sizeof(uint16_t), 1, fptr);
+    fwrite(&bits_per_pixel, sizeof(uint16_t), 1, fptr);
+    fwrite(&compression, sizeof(uint32_t), 1, fptr);
+    fwrite(&image_size, sizeof(uint32_t), 1, fptr);
+    fwrite(&vertical_resolution, sizeof(int32_t), 1, fptr);
+    fwrite(&horizontal_resolution, sizeof(int32_t), 1, fptr);
+    fwrite(&colors, sizeof(uint32_t), 1, fptr);
+    fwrite(&imporant_colors, sizeof(uint32_t), 1, fptr);
+    fwrite(&color1, sizeof(uint32_t), 1, fptr);
+    fwrite(&color2, sizeof(uint32_t), 1, fptr);
 }
 
 // Image data stored in unsigner char
 
 int main(int argc, char *argv[]){
-    unsigned int width, height, checksum=0, codecheck = 1, digits_len, stride, file_size;
+    unsigned int width, height, checksum=0, codecheck = 1, digits_len, stride, file_size, modwith;
     char digits[9] = {0}, filename[256] = {0}, tmp;
     char *pictureData, *buffer;
     
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
 
     // Read and validate width
     width = atoi(argv[1]);
-    if(width < 67){
+    if(width < 67 || width %67 != 0){
         printf("Invalid width");
         return 2;
     }
@@ -116,8 +116,8 @@ int main(int argc, char *argv[]){
         return 5;
     }
     
-
-    draw_ean8(pictureData, stride, height, width, digits, buffer);
+    modwith = width / 67;
+    draw_ean8(pictureData, stride, height, modwith, digits, buffer);
     
     FILE *fptr;
     fptr = fopen(filename,"wb");
