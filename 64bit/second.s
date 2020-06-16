@@ -6,29 +6,27 @@ section     .text
 global      draw_ean8
 
 draw_ean8:
-    push    RBX
+    push    RBP           
 
-
-    push    R9                             ; save beginning of buffer
     mov     [R9], DWORD 0x010001           ;First brace
     mov     [R9+63], DWORD 0x01000100      ;End brace
     mov     [R9+31], DWORD 0x01000100      ;Second brace 1
     mov     [R9+35], BYTE 0x00             ;Second brace 2
-    add     R9, 2              ; allign for first digit
+    add     R9, 2                          ;allign for first digit
     
     xor     R10, R10            ; zero edx for digit counter
-    xor     RBX, RBX            ; zero ebx for code reading
+    xor     R11, R11            ; zero ebx for code reading
 read_dig:
     mov     BL, [R8 + R10]          ; read digit
     sub     BL, '0'                 ; digit to int
-    mov     BL, [codes + RBX]       ; digit to code
+    mov     BL, [codes + R11]       ; digit to code
 
-    mov     RAX, 7              ; init counter
+    mov     EAX, 7              ; init counter
     cmp     R10, 4              ; for digits after 3 negate codes
     jl      loop1
     not     BL
 loop1:
-    inc     R9                
+    inc     R9                  ; inc buffer
     dec     EAX                 
     bt      EBX, EAX
     jnc     loop1end            ; if 0 skip
@@ -42,36 +40,38 @@ loop1end:
 cont:
     cmp     R10, 8
     jne     read_dig
-    pop     R9
+    sub     R9, 66              ; go back to beginning
 
+
+    ; Setting up scaling
     CVTSI2SS    xmm1, RCX       ; xmm1 = width
     movss   xmm0, [a]           ; xmm0 = 67
     divss   xmm0, xmm1          ; xmm0 = 67/width - step
     subss   xmm2, xmm2
 
+    ; Preparation for loops
     xor     R10, R10            ; 0 for width counter
     xor     R11, R11            ; 0 for height counter
     xor     RAX, RAX            ; 0 for buffer offset
 columnloop:
     cmp     BYTE [R9 + RAX], 0
-    jz      afterset
+    jz      afterset                ; Skip if 0
     push    RDI    
     mov     R11, RDX
 rowloop:
-    mov     [RDI + R10], BYTE 0x01
-    add     RDI, RSI
+    mov     [RDI + R10], BYTE 0x01  
+    add     RDI, RSI                
     dec     R11
     jnz     rowloop
     pop     RDI
 afterset:
     addss   xmm2, xmm0            ; add step
-    CVTTSS2SI    RAX, xmm2        ; round to integer -> memory
-                                  ; memory -> register
+    CVTTSS2SI    RAX, xmm2        ; round to integer with trunctuation
 
     inc     R10
-    cmp     R10, RCX            ; RCX == height 
+    cmp     R10, RCX              ; RCX == height  
     jne     columnloop
 
 ;Epilogue
-    pop     RBX
+    pop     RBP
     ret 
