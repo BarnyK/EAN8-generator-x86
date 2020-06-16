@@ -6,6 +6,10 @@ section     .text
 global      draw_ean8
 
 draw_ean8:
+
+    ; Encoding digits into a buffer
+    ; R9 - buffer pointer
+    ; R10 
     mov     [R9], DWORD 0xFF00FF           ;First brace
     mov     [R9+63], DWORD 0xFF00FF00      ;End brace
     mov     [R9+31], DWORD 0xFF00FF00      ;Second brace
@@ -18,14 +22,14 @@ read_dig:
     sub     R11B, '0'                 ; digit to int
     mov     R11B, [codes + R11]       ; digit to code
 
-    mov     EAX, 7              ; init counter
+    mov     AL, 7              ; init counter
     cmp     R10, 4              ; for digits after 3 negate codes
     jl      loop1
     not     R11B
 loop1:
     inc     R9                  ; inc buffer
-    dec     EAX                 ; decrease counter
-    bt      R11, RAX
+    dec     AL                 ; decrease counter
+    bt      R11B, AL
     jnc     loop1end            ; if 0 skip
     mov     [R9], BYTE 0xFF    
 loop1end:
