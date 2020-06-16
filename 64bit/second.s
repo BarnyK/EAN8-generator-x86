@@ -30,18 +30,19 @@ loop1:
     dec     EAX                 
     bt      EBX, EAX
     jnc     loop1end            ; if 0 skip
-    mov     [R9], BYTE 0x01    ; set 1
+    mov     [R9], BYTE 0x01    
 loop1end:
     jnz     loop1               
     inc     R10
     cmp     R10D, 4
+
     jne     cont
     add     R9, 5              ; skip the bar
 cont:
     cmp     R10, 8
     jne     read_dig
-    sub     R9, 66              ; go back to beginning
 
+    sub     R9, 66              ; go back to beginning of buffer
 
     ; Setting up scaling
     CVTSI2SS    xmm1, RCX       ; xmm1 = width
@@ -56,18 +57,19 @@ cont:
 columnloop:
     cmp     BYTE [R9 + RAX], 0
     jz      afterset                ; Skip if 0
-    push    RDI    
-    mov     R11, RDX
+
+    mov     R8, RDI             ; Save bottom of the column 
+    mov     R11, RDX            
 rowloop:
     mov     [RDI + R10], BYTE 0x01  
     add     RDI, RSI                
     dec     R11
     jnz     rowloop
-    pop     RDI
+
+    mov     RDI, R8             ; Restore column
 afterset:
     addss   xmm2, xmm0            ; add step
-    CVTTSS2SI    RAX, xmm2        ; round to integer with trunctuation
-
+    cvttss2si   RAX, xmm2        ; round to integer with trunctuation
     inc     R10
     cmp     R10, RCX              ; RCX == height  
     jne     columnloop
