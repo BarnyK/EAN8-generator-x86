@@ -114,14 +114,8 @@ int main(int argc, char *argv[]){
         return 5;
     }
     
-
-    height = 100;
-    width = 67;
     draw_ean8(pictureData, stride, height, width, digits, buffer);
-    for(int i=0;i<67;i++){
-        printf("%d ",buffer[i]);
-    }
-    putchar('\n');
+
     FILE *fptr;
     fptr = fopen(filename,"wb");
     writeHeader(fptr, file_size, height, width);

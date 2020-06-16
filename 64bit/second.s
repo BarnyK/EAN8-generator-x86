@@ -1,13 +1,15 @@
 section     .data
     codes:  db 0xD, 0x19, 0x13, 0x3D, 0x23, 0x31, 0x2F, 0x3B, 0x37, 0xB
-    a:      dq 67.0
+    a:      dd 67.00
 
 section     .text
 global      draw_ean8
 
 draw_ean8:
-    push    RBP
-    push    R9                           ; save beginning of buffer
+    push    RBX
+
+
+    push    R9                             ; save beginning of buffer
     mov     [R9], DWORD 0x010001           ;First brace
     mov     [R9+63], DWORD 0x01000100      ;End brace
     mov     [R9+31], DWORD 0x01000100      ;Second brace 1
@@ -42,53 +44,34 @@ cont:
     jne     read_dig
     pop     R9
 
-    fldz
-    fld     qword [a]           ; st0 = 67
-    mov     [a], RCX
-    fld     qword [a]           ; st0 = width, st1 = 67
-    fdivp   st1, st0            ; st0 = 67/(width) = step size
-    fldz                        ; st0 = 0, st1 = step
+    CVTSI2SS    xmm1, RCX       ; xmm1 = width
+    movss   xmm0, [a]           ; xmm0 = 67
+    divss   xmm0, xmm1          ; xmm0 = 67/width - step
+    subss   xmm2, xmm2
 
-        ; eax -> R9
-        ; EDI -> RDI
-        ; [EBP + 12] -> RSI
-        ; [EBP + 20] -> RCX
-        ; [EBP + 16] -> RDX
-        ; ECX -> R10
-        ; EBX -> R11
-        ; ESI -> RAX
+    xor     R10, R10            ; 0 for width counter
+    xor     R11, R11            ; 0 for height counter
+    xor     RAX, RAX            ; 0 for buffer offset
+columnloop:
+    cmp     BYTE [R9 + RAX], 0
+    jz      afterset
+    push    RDI    
+    mov     R11, RDX
+rowloop:
+    mov     [RDI + R10], BYTE 0x01
+    add     RDI, RSI
+    dec     R11
+    jnz     rowloop
+    pop     RDI
+afterset:
+    addss   xmm2, xmm0            ; add step
+    CVTTSS2SI    RAX, xmm2        ; round to integer -> memory
+                                  ; memory -> register
 
-;     xor     R10, R10            ; 0 for width counter
-;     xor     R11, R11            ; 0 for height counter
-;     xor     RAX, RAX            ; 0 for buffer offset
-; columnloop:
-;     cmp     BYTE [R9 + RAX], 0
-;     jz      afterset
-;     push    RDI    
-;     mov     R11, RDX
-; rowloop:
-;     mov     [RDI + R10], BYTE 0x01
-;     add     RDI, RSI
-;     dec     R11
-;     jnz     rowloop
-;     pop     RDI
-; afterset:
+    inc     R10
+    cmp     R10, RCX            ; RCX == height 
+    jne     columnloop
 
-;     fadd    st0, st1            ; add step
-;     fst     st2
-;     fisttp  dword[a]            ; round to integer -> memory
-;     fld     st1                 
-;     mov     RAX, [a]            ; memory -> register
-
-;     inc     R10
-;     cmp     R10, RCX       ; ecx == height 
-;     jne     columnloop
-
-; end:
-;     ; Free used floating point stack
-     ffree   st0
-     ffree   st0
-     ffree   st0
- 
-    pop     rbp
+;Epilogue
+    pop     RBX
     ret 
