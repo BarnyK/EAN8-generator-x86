@@ -7,7 +7,6 @@ global      draw_ean8
 draw_ean8:
     push    ebp
     mov     ebp, esp
-
     push    ebx
     push    esi
     push    edi
@@ -68,12 +67,12 @@ loopmod:
     jnz     loopheight                  ; jump next row
     mov     edi, edx                    ; restore picture pointer
 end:
-    add     edi, [ebp+20]
-    inc     esi
+    add     edi, [ebp+20]               ; next section of barcode
+    inc     esi         
     cmp     esi, 67
     jne     columnloop
 
-epilogue:
+    ; Epilogue
     ; return registers and frame back
     pop     edi
     pop     esi
