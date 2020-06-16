@@ -6,12 +6,9 @@ section     .text
 global      draw_ean8
 
 draw_ean8:
-    push    RBP           
-
-    mov     [R9], DWORD 0x010001           ;First brace
-    mov     [R9+63], DWORD 0x01000100      ;End brace
-    mov     [R9+31], DWORD 0x01000100      ;Second brace 1
-    mov     [R9+35], BYTE 0x00             ;Second brace 2
+    mov     [R9], DWORD 0xFF00FF           ;First brace
+    mov     [R9+63], DWORD 0xFF00FF00      ;End brace
+    mov     [R9+31], DWORD 0xFF00FF00      ;Second brace
     add     R9, 2                          ;allign for first digit
     
     xor     R10, R10            ; zero edx for digit counter
@@ -27,10 +24,10 @@ read_dig:
     not     R11B
 loop1:
     inc     R9                  ; inc buffer
-    dec     EAX                 
+    dec     EAX                 ; decrease counter
     bt      R11, RAX
     jnc     loop1end            ; if 0 skip
-    mov     [R9], BYTE 0x01    
+    mov     [R9], BYTE 0xFF    
 loop1end:
     jnz     loop1               
     inc     R10
@@ -61,7 +58,7 @@ columnloop:
     mov     R8, RDI             ; Save bottom of the column 
     mov     R11, RDX            
 rowloop:
-    mov     [RDI + R10], BYTE 0x01  
+    mov     [RDI + R10], BYTE 0xFF  
     add     RDI, RSI                
     dec     R11
     jnz     rowloop
@@ -75,5 +72,4 @@ afterset:
     jne     columnloop
 
 ;Epilogue
-    pop     RBP
     ret 

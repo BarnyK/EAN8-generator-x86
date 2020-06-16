@@ -16,10 +16,9 @@ draw_ean8:
     mov     eax, [ebp+28]       ;buffer
     mov     edi, [ebp+24]       ;digits
 
-    mov     [eax], DWORD 0x010001           ;First brace
-    mov     [eax+63], DWORD 0x01000100      ;End brace
-    mov     [eax+31], DWORD 0x01000100      ;Second brace 1
-    mov     [eax+35], BYTE 0x00             ;Second brace 2
+    mov     [eax], DWORD 0xFF00FF           ;First brace
+    mov     [eax+63], DWORD 0xFF00FF00      ;End brace
+    mov     [eax+31], DWORD 0xFF00FF00      ;Second brace 
     add     eax, 2              ; allign for first digit
 
     xor     edx, edx            ; zero edx for digit counter
@@ -38,7 +37,7 @@ loop1:
     dec     ecx                 
     bt      ebx, ecx
     jnc     loop1end            ; if 0 skip
-    mov     [eax], BYTE 0x01    ; set 1
+    mov     [eax], BYTE 0xFF    ; set 1
 loop1end:
     jnz     loop1               
     inc     edx
@@ -70,7 +69,7 @@ columnloop:
     push    edi    
     mov     ebx, [ebp+16]
 rowloop:
-    mov     [edi + ecx], BYTE 0x01
+    mov     [edi + ecx], BYTE 0xFF
     add     edi, [ebp+12]
     dec     ebx
     jnz     rowloop

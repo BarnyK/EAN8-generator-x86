@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdint.h>
 //void draw_ean8(void *img, unsigned int stride, unsigned int height,unsigned int modwidth, char *digits);
 extern void draw_ean8(char *img, unsigned int stride, unsigned int height, unsigned int width, char *digits, char *buffer);
 
