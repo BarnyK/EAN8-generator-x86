@@ -31,7 +31,7 @@ read_dig:
 loop1:
     inc     R9D                  ; inc buffer
     dec     AX                 ; decrease counter
-    bt      R11B, AX
+    bt      R11W, AX
     jnc     loop1end            ; if 0 skip
     mov     [R9], BYTE 0xFF    
 loop1end:

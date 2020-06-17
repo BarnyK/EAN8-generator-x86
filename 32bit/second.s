@@ -12,6 +12,10 @@ draw_ean8:
     push    edi
     
     ;   Writing to buffer
+    ; EAX - buffer pointer
+    ; EDI - digits pointer
+    ; EDX - digits offset/counter
+    ; EBX - bits of digits counter
     mov     eax, [ebp+28]       ;buffer
     mov     edi, [ebp+24]       ;digits
     mov     [eax], DWORD 0xFF00FF           ;First brace
@@ -26,16 +30,16 @@ read_dig:
     sub     bl, '0'             ; digit to int
     mov     bl, [codes + ebx]   ; digit to code
 
-    mov     ecx, 7              ; init counter
+    mov     cx, 7              ; init counter
     cmp     edx, 4              ; for digits after 3 negate codes
     jl      loop1
     not     bl
 loop1:
     inc     eax                 
-    dec     ecx                 
-    bt      ebx, ecx
+    dec     cx                 
+    bt      bx, cx
     jnc     loop1end            ; if 0 skip
-    mov     [eax], BYTE 0x01    ; set 1
+    mov     [eax], BYTE 0xFF    ; set 
 loop1end:
     jnz     loop1               
     inc     edx
@@ -48,6 +52,13 @@ cont:
 
 
     ; Writing to picture data
+    ; EAX - buffer
+    ; EDI - picture
+    ; ESI - buffer offset counter
+    ; EBX - height counter
+    ; ECX - modwith counter
+    ; EDX - saving picture pointer
+    sub     eax, 63
     mov     eax, [ebp+28]       ; set eax to point to beginning of buffer
     mov     edi, [ebp+8]        ; picture data
     xor     esi, esi            ; 0 for buffer offset
