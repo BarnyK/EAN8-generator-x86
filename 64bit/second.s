@@ -24,14 +24,14 @@ read_dig:
     sub     R11B, '0'                 ; digit to int
     mov     R11B, [codes + R11]       ; digit to code
 
-    mov     AX, 7              ; init counter
+    mov     EAX, 7              ; init counter
     cmp     R10D, 4              ; for digits after 3 negate codes
     jl      loop1
     not     R11B
 loop1:
     inc     R9D                  ; inc buffer
-    dec     AX                 ; decrease counter
-    bt      R11W, AX
+    dec     EAX                 ; decrease counter
+    bt      R11D, EAX
     jnc     loop1end            ; if 0 skip
     mov     [R9], BYTE 0xFF    
 loop1end:
