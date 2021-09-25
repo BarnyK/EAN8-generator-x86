@@ -1,8 +1,11 @@
 # EAN8 Generator
 ## Directories explanation
 32bit - Contains 32bit version of the code
+
 32bit_FPU - 32bit version using the Floating Point Unit
+
 64bit - Contains 64bit version of the code
+
 64bit_SSE - 64bit version using the Streaming SIMD Extensions
 
 ## Compilation
